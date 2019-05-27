@@ -14,3 +14,10 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter, view our 
 [online documentation](https://flutter.dev/docs), which offers tutorials, 
 samples, guidance on mobile development, and a full API reference.
+
+
+## Attension
+
+ Error: Trying to embed a platform view but the PrerollContext does not support embedding
+
+ you need add key=io.flutter.embedded_views_preview value=YES in plist
