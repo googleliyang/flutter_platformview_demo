@@ -1,6 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() => runApp(MyApp());
+
+typedef void TextViewCreatedCallback(TextViewController controller);
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -26,7 +30,10 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key key, this.title, }) : super(key: key);
+
+
+//  final TextViewCreatedCallback onTextViewCreated;
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -38,6 +45,10 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
 
   final String title;
+
+  void onTextViewCreated(TextViewController controller) {
+    controller.setText('Hello from Android.....!');
+  }
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -57,6 +68,14 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _onPlatformViewCreated(int id) {
+    if (widget.onTextViewCreated == null) {
+      return;
+    }
+    widget.onTextViewCreated(new TextViewController._(id));
+  }
+
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -65,6 +84,22 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text("andoridView demo"),
+        ),
+        body: SizedBox(
+          width: 350,
+          height: 350,
+          child: AndroidView(
+            viewType: 'plugins.felix.angelov/textview',
+            onPlatformViewCreated: _onPlatformViewCreated,
+
+          ),
+        )
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -89,5 +124,16 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+}
+class TextViewController {
+  TextViewController._(int id)
+      : _channel = new MethodChannel('plugins.felix.angelov/textview_$id');
+
+  final MethodChannel _channel;
+
+  Future<void> setText(String text) async {
+    assert(text != null);
+    return _channel.invokeMethod('setText', text);
   }
 }
